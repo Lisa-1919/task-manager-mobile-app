@@ -4,6 +4,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import TaskList from "../components/task-list/TaskList";
 import TaskForm from "../components/task-form/TaskForm";
 import ErrorMessage from "../components/error/ErrorMessage";
+import Icon from 'react-native-vector-icons/MaterialIcons';
 
 const Home = () => {
     const [tasks, setTasks] = useState([]);
@@ -70,7 +71,7 @@ const Home = () => {
             <ErrorMessage message={error} />
             {!isFormVisible && (
                 <Pressable onPress={handleAddTask} style={styles.addButton}>
-                    <Text style={styles.addButtonText}>Add</Text>
+                    <Icon name="add" size={40}/>
                 </Pressable>
             )}
             <TaskList
@@ -79,9 +80,9 @@ const Home = () => {
                 onDeleteTask={handleDeleteTask}
             />
             {isFormVisible && (
-                <View>
-                    <Pressable onPress={handleCloseForm}>
-                        <Text>Cancel</Text>
+                <View style={styles.formContainer}>
+                    <Pressable onPress={handleCloseForm} style={styles.closeForm}>
+                        <Icon name="close" size={20}/>
                     </Pressable>
                     <TaskForm task={selectedTask} onSubmit={handleSubmitTask} />
                 </View>
@@ -110,6 +111,15 @@ const styles = StyleSheet.create({
     addButtonText: {
         color: '#fff',
         fontSize: 20,
+    },
+    formContainer: {
+        backgroundColor: '#fff',
+    },
+    closeForm: {
+        position: 'absolute',
+        top: 10,
+        right: 20,
+        zIndex: 1,
     },
 });
 
