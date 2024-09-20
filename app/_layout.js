@@ -1,13 +1,14 @@
 import { Stack } from 'expo-router';
+import { View } from 'react-native'; 
 
 const Layout = () => {
-
     return (
-        <Stack initialRouteName="home">
-            <Stack.Screen name="home" />
-        </Stack>
-    )
-
+        <View style={{ flex: 1 }}>
+            <Stack initialRouteName="home">
+                <Stack.Screen name="home" />
+            </Stack>
+        </View>
+    );
 };
 
 export default Layout;

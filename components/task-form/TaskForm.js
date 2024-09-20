@@ -7,17 +7,8 @@ const TaskForm = ({ task, onSubmit }) => {
   const [date, setDate] = useState('');
   const [location, setLocation] = useState('');
 
-  useEffect(() => {
-    if (task) {
-      setTitle(task.title);
-      setDescription(task.description);
-      setDate(task.date);
-      setLocation(task.location);
-    }
-  }, [task]);
-
   const handleSubmit = () => {
-    const newTask = { title, description, date, location };
+    const newTask = { title, description, date, location};
     onSubmit(newTask);
   };
 
@@ -66,6 +57,7 @@ const TaskForm = ({ task, onSubmit }) => {
 const styles = StyleSheet.create({
   container: {
     padding: 20,
+    backgroundColor: '#fff',
   },
   label: {
     fontSize: 16,

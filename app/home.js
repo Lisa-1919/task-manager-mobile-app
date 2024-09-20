@@ -1,71 +1,115 @@
-import { useState } from "react";
-import { SafeAreaView, ScrollView, View, StyleSheet } from "react-native";
-import { Stack, useRouter } from "expo-router";
-import { GestureHandlerRootView } from 'react-native-gesture-handler';
-
+import React, { useState, useEffect } from "react";
+import { View, StyleSheet, TouchableOpacity, Text, Pressable } from "react-native";
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import TaskList from "../components/task-list/TaskList";
-
-const tasks = [
-    { id: 1, title: 'Buy groceries', date: '2024-09-20', status: 'In Progress' },
-    { id: 2, title: 'Walk the dog', date: '2024-09-21', status: 'Completed' },
-    { id: 3, title: 'Read a book', date: '2024-09-22', status: 'Cancelled' },
-];
-
+import TaskForm from "../components/task-form/TaskForm";
+import ErrorMessage from "../components/error/ErrorMessage";
 
 const Home = () => {
-    const router = useRouter()
-    const [searchTerm, setSearchTerm] = useState("");
-
-
+    const [tasks, setTasks] = useState([]);
     const [selectedTask, setSelectedTask] = useState(null);
     const [isFormVisible, setIsFormVisible] = useState(false);
+    const [error, setError] = useState(null);
 
-    // Открыть форму для добавления новой задачи
+    useEffect(() => {
+        const fetchTasks = async () => {
+            try {
+                const storedTasks = await AsyncStorage.getItem('tasks');
+                if (storedTasks) {
+                    setTasks(JSON.parse(storedTasks));
+                }
+            } catch (e) {
+                setError("Failed to load tasks from storage", e);
+            }
+        };
+
+        fetchTasks();
+    }, []);
+
+    const saveTasksToStorage = async (newTasks) => {
+        try {
+            await AsyncStorage.setItem('tasks', JSON.stringify(newTasks));
+        } catch (e) {
+            setError("Failed to save tasks", e);
+        }
+    };
+    //add new task
+    const handleSubmitTask = (task) => {
+        const newTask = { ...task, id: tasks.length + 1, status: 'In Progress' };
+        const updatedTasks = [...tasks, newTask];
+        setTasks(updatedTasks);
+        saveTasksToStorage(updatedTasks);
+        setIsFormVisible(false);
+    };
+
+    //delete task
+    const handleDeleteTask = (taskId) => {
+        const updatedTasks = tasks.filter(task => task.id !== taskId);
+        setTasks(updatedTasks);
+        saveTasksToStorage(updatedTasks);
+    };
+
+    const handleChangeStatus = (id, newStatus) => {
+        const updatedTasks = tasks.map(task => task.id === id ? { ...task, status: newStatus } : task);
+        setTasks(updatedTasks);
+        AsyncStorage.setItem('tasks', JSON.stringify(updatedTasks));
+    };
+
+    //open add task form
     const handleAddTask = () => {
         setSelectedTask(null);
         setIsFormVisible(true);
     };
 
-    // Открыть форму для редактирования задачи
-    const handleEditTask = (task) => {
-        setSelectedTask(task);
-        setIsFormVisible(true);
-    };
-
-    // Обработать отправку формы
-    const handleSubmitTask = (task) => {
-        if (selectedTask) {
-            // Редактирование существующей задачи
-            setTasks((prevTasks) => prevTasks.map(t => t.id === selectedTask.id ? { ...t, ...task } : t));
-        } else {
-            // Добавление новой задачи
-            const newTask = { ...task, id: tasks.length + 1, status: 'In Progress' };
-            setTasks([...tasks, newTask]);
-        }
-        setIsFormVisible(false); // Скрываем форму после сохранения
-    };
-
-    // Удалить задачу
-    const handleDeleteTask = (taskId) => {
-        setTasks((prevTasks) => prevTasks.filter((task) => task.id !== taskId));
+    const handleCloseForm = () => {
+        setIsFormVisible(false);
     };
 
     return (
-        <GestureHandlerRootView style={styles.container}>
-            <View>
-                <TaskList
-                    tasks={tasks}
-                    onEditTask={handleEditTask}
-                    onDeleteTask={handleDeleteTask}
-                />
-            </View>
-        </GestureHandlerRootView>
+        <View style={styles.container}>
+            <ErrorMessage message={error} />
+            {!isFormVisible && (
+                <Pressable onPress={handleAddTask} style={styles.addButton}>
+                    <Text style={styles.addButtonText}>Add</Text>
+                </Pressable>
+            )}
+            <TaskList
+                tasks={tasks}
+                onEditTask={handleChangeStatus}
+                onDeleteTask={handleDeleteTask}
+            />
+            {isFormVisible && (
+                <View>
+                    <Pressable onPress={handleCloseForm}>
+                        <Text>Cancel</Text>
+                    </Pressable>
+                    <TaskForm task={selectedTask} onSubmit={handleSubmitTask} />
+                </View>
+            )}
+        </View>
     );
 };
 
 const styles = StyleSheet.create({
     container: {
         flex: 1,
+        padding: 10,
+    },
+    addButton: {
+        position: 'absolute',
+        bottom: 20,
+        right: 20,
+        backgroundColor: '#4CAF50',
+        borderRadius: 50,
+        width: 60,
+        height: 60,
+        justifyContent: 'center',
+        alignItems: 'center',
+        zIndex: 1,
+    },
+    addButtonText: {
+        color: '#fff',
+        fontSize: 20,
     },
 });
 

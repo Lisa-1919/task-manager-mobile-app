@@ -1,22 +1,19 @@
 import React from 'react';
-import { FlatList } from 'react-native';
+import { FlatList, View, Text, StyleSheet } from 'react-native';
 import Task from '../task/Task';
 
 const TaskList = ({ tasks, onEditTask, onDeleteTask }) => {
+    const renderTask = ({ item }) => (
+        <Task task={item} handleChangeStatus={onEditTask} handleDeleteTask={onDeleteTask} />
+    );
 
-  const renderTask = ({ item }) => <Task
-    task={item}
-    onEditTask={onEditTask}
-    onDeleteTask={onDeleteTask}
-  />;
-
-  return (
-    <FlatList
-      data={tasks}
-      keyExtractor={(item) => item.id.toString()}
-      renderItem={renderTask}
-    />
-  );
+    return (
+        <FlatList
+            data={tasks}
+            keyExtractor={(item) => item.id.toString()}
+            renderItem={renderTask}
+        />
+    );
 };
 
 export default TaskList;
