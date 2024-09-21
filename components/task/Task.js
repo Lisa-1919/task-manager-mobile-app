@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, Pressable, Animated } from 'react-native';
+import { View, Text, StyleSheet, Pressable, Animated, Alert } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 
 const Task = ({ task, handleChangeStatus, handleDeleteTask }) => {
@@ -21,6 +21,25 @@ const Task = ({ task, handleChangeStatus, handleDeleteTask }) => {
         inputRange: [0, 1],
         outputRange: ['0deg', '180deg'], // Поворот от 0 до 180 градусов
     });
+
+    // Функция для отображения подтверждения перед удалением
+    const confirmDelete = () => {
+        Alert.alert(
+            'Delete Task',
+            `Are you sure you want to delete the task "${task.title}"?`,
+            [
+                {
+                    text: 'Cancel',
+                    style: 'cancel',
+                },
+                {
+                    text: 'Delete',
+                    style: 'destructive',
+                    onPress: () => handleDeleteTask(task.id),
+                },
+            ]
+        );
+    };
 
     return (
         <View style={styles.taskContainer}>
@@ -47,8 +66,8 @@ const Task = ({ task, handleChangeStatus, handleDeleteTask }) => {
             )}
 
             <View style={styles.buttonsContainer}>
-                <Pressable onPress={() => handleDeleteTask(task.id)} style={styles.deleteButton}>
-                    <Icon name="trash" size={20}/>
+                <Pressable onPress={confirmDelete} style={styles.deleteButton}>
+                    <Icon name="trash" size={20} />
                 </Pressable>
                 <Pressable
                     onPress={() => handleChangeStatus(task.id, task.status === "Completed" ? "In Progress" : "Completed")}

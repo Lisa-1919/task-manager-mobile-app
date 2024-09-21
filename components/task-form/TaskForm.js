@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, Button, StyleSheet, Platform, Pressable } from 'react-native';
+import { View, Text, TextInput, Button, StyleSheet, Pressable, Alert } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 
 const TaskForm = ({ task, onSubmit }) => {
@@ -7,25 +7,56 @@ const TaskForm = ({ task, onSubmit }) => {
   const [description, setDescription] = useState('');
   const [location, setLocation] = useState('');
 
-  const [date, setDate] = useState(new Date());
-  const [time, setTime] = useState(new Date());
-
+  const [dateTime, setDateTime] = useState(new Date());
   const [showPicker, setShowPicker] = useState(false);
+  const [mode, setMode] = useState('');
 
   const handleSubmit = () => {
+    //put erros into array
+    const errors = [];
+    
+    if (title.trim() === '') {
+      errors.push('Task Title');
+    }
+    if (description.trim() === '') {
+      errors.push('Description');
+    }
+    if (location.trim() === '') {
+      errors.push('Location');
+    }
+
+    if (errors.length > 0) {
+      Alert.alert('Validation Error', `Please fill in the following fields: ${errors.join(', ')}`);
+      return;
+    }
+
+    if (dateTime < new Date()) {
+      Alert.alert('Invalid Date/Time', 'The selected date and time cannot be in the past.');
+      return;
+    }
+
     const newTask = {
       title,
       description,
-      date: date.toLocaleString(), // Сохраняем выбранную дату
-      location
+      date: dateTime.toLocaleString(),
+      location,
     };
     onSubmit(newTask);
   };
 
   const handleDateChange = (event, selectedDate) => {
-    const currentDate = selectedDate || date;
-    setShowPicker(Platform.OS === 'ios'); // Оставляем пикер видимым на iOS, скрываем на Android
-    setDate(currentDate);
+    const currentDate = selectedDate || dateTime;
+    if (currentDate >= new Date()) {
+      setDateTime(currentDate);
+    } else {
+      Alert.alert('Invalid Date/Time', 'The selected date and time cannot be in the past.');
+    }
+    setShowPicker(false);
+  };
+
+  const showMode = (currentMode) => {
+    setShowPicker(true);
+    setMode(currentMode);
   };
 
   return (
@@ -55,29 +86,26 @@ const TaskForm = ({ task, onSubmit }) => {
       />
 
       <Text style={styles.label}>Date and Time</Text>
-      <Pressable onPress={() => setShowPicker(true)}>
-        <Text style={styles.dateText}>{date.toLocaleString()}</Text>
-      </Pressable>
+      <View style={styles.dateTimeContainer}>
+        <Pressable onPress={() => showMode('date')}>
+          <Text style={styles.dateText}>{dateTime.toLocaleDateString()}</Text>
+        </Pressable>
+        <Pressable onPress={() => showMode('time')}>
+          <Text style={styles.timeText}>{dateTime.toLocaleTimeString()}</Text>
+        </Pressable>
+      </View>
 
       {showPicker && (
-        <View>
-          <DateTimePicker
-            value={date}
-            mode="date"
-            display="default"
-            onChange={handleDateChange}
-          />
-          <DateTimePicker
-          value={time}
-            mode="time"
-            display="default"
-          />
-        </View>
-
+        <DateTimePicker
+          value={dateTime}
+          mode={mode}
+          display="default"
+          onChange={handleDateChange}
+        />
       )}
 
       <Button
-        title={task ? "Save Changes" : "Add Task"}
+        title="Add Task"
         onPress={handleSubmit}
       />
     </View>
@@ -100,10 +128,20 @@ const styles = StyleSheet.create({
     marginBottom: 15,
     paddingHorizontal: 10,
   },
+  dateTimeContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
   dateText: {
     fontSize: 16,
     marginVertical: 10,
     color: '#000',
+  },
+  timeText: {
+    fontSize: 16,
+    marginVertical: 10,
+    color: '#000',
+    marginLeft: 20,
   },
 });
 
