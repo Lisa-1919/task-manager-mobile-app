@@ -11,7 +11,7 @@ const Task = ({ task, handleChangeStatus, handleDeleteTask }) => {
         setExpandedTaskId(isExpanded ? null : id);
 
         Animated.timing(rotateValue, {
-            toValue: isExpanded ? 0 : 1, // Поворот на 180 градусов
+            toValue: isExpanded ? 0 : 1, // route from 0 to 180
             duration: 300,
             useNativeDriver: true,
         }).start();
@@ -19,10 +19,10 @@ const Task = ({ task, handleChangeStatus, handleDeleteTask }) => {
 
     const rotateIcon = rotateValue.interpolate({
         inputRange: [0, 1],
-        outputRange: ['0deg', '180deg'], // Поворот от 0 до 180 градусов
+        outputRange: ['0deg', '180deg'], // route from 0 to 180
     });
 
-    // Функция для отображения подтверждения перед удалением
+    // delete confirmation before deleting task
     const confirmDelete = () => {
         Alert.alert(
             'Delete Task',
